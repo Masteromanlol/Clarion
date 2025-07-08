@@ -3,275 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clarion - The Future of Q&A</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .gradient-text {
-            background: -webkit-linear-gradient(45deg, #3b82f6, #1e40af);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        /* Simple transition for page visibility */
-        .page {
-            display: none;
-        }
-        .page.active {
-            display: block;
-        }
-        /* Styling for the answer toggles */
-        .answer-list {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
-        }
-    </style>
+    <title>Clarion - Ask the World, Discover the Consensus</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
 
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold gradient-text cursor-pointer" onclick="showPage('home')">Clarion</h1>
-            <nav class="space-x-6">
-                <a href="#home" onclick="showPage('home')" class="text-gray-600 hover:text-blue-600 transition-colors">Home</a>
-                <a href="#about" onclick="showPage('about')" class="text-gray-600 hover:text-blue-600 transition-colors">About</a>
-                <a href="#demo" onclick="showPage('demo')" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">Live Demo</a>
-            </nav>
-        </div>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="nav-logo">Clarion</a>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                </ul>
+            </div>
+        </nav>
     </header>
 
-    <!-- Main Content Area -->
     <main>
-        <!-- Home Page -->
-        <div id="home" class="page active">
-            <section class="container mx-auto px-6 py-16 md:py-24 text-center">
-                <h2 class="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-                    Tired of endless scrolling?
-                </h2>
-                <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-                    Clarion is a new kind of Q&A platform. Instead of voting, our AI finds the common ground in answers, giving you clear, summarized insights without the noise.
-                </p>
-                <div class="mt-8">
-                    <a href="#demo" onclick="showPage('demo')" class="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300">
-                        Try the Demo
-                    </a>
-                </div>
-            </section>
-        </div>
+        <section class="hero-section text-center">
+            <div class="container">
+                <h1>Ask the World. Discover the Consensus.</h1>
+                <p class="sub-headline">Stop searching through scattered opinions. Clarion brings together diverse perspectives on any question, revealing the most common viewpoints and helping you find the truth.</p>
+                <a href="#ask" class="btn btn-primary">Ask Your First Question</a>
+            </div>
+        </section>
 
-        <!-- About Page -->
-        <div id="about" class="page">
-             <section class="bg-white py-16 md:py-24">
-                <div class="container mx-auto px-6 max-w-4xl">
-                    <div class="text-center">
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Our Vision</h2>
-                        <p class="mt-4 text-lg text-gray-600">
-                            We believe the internet needs less noise and more understanding. Clarion is our answer—a tool designed not for arguments, but for insight. By focusing on consensus and commonality, we aim to build a more thoughtful and constructive space for global conversation.
-                        </p>
+        <section id="how-it-works" class="how-it-works-section">
+            <div class="container">
+                <h2 class="text-center">How Clarion Works</h2>
+                <div class="steps-grid">
+                    <div class="step fade-in">
+                        <h3>1. Ask Anything</h3>
+                        <p>Pose any question to a global community. From complex societal issues to specific product details, no topic is too big or too small.</p>
                     </div>
-                    <div class="mt-16">
-                        <h3 class="text-2xl font-bold text-gray-900 text-center mb-8">The Technology: The Clarity Engine</h3>
-                        <div class="grid md:grid-cols-3 gap-8 text-center">
-                            <div class="bg-gray-100 p-6 rounded-lg">
-                                <h4 class="text-xl font-semibold text-gray-900 mb-2">1. Vectorization</h4>
-                                <p class="text-gray-600">Every answer is converted into a numerical "vector" that represents its semantic meaning, not just its keywords.</p>
-                            </div>
-                            <div class="bg-gray-100 p-6 rounded-lg">
-                                <h4 class="text-xl font-semibold text-gray-900 mb-2">2. Clustering</h4>
-                                <p class="text-gray-600">Our AI uses advanced algorithms to group answers with similar meanings into thematic clusters.</p>
-                            </div>
-                            <div class="bg-gray-100 p-6 rounded-lg">
-                                <h4 class="text-xl font-semibold text-gray-900 mb-2">3. Summarization</h4>
-                                <p class="text-gray-600">Finally, the engine generates a new, clean summary that represents the core idea of each cluster.</p>
-                            </div>
+                    <div class="step fade-in">
+                        <h3>2. Answer What You Know</h3>
+                        <p>We’ll recommend questions based on your unique knowledge and interests. Share your expertise, whether you're a pro or have firsthand experience.</p>
+                    </div>
+                    <div class="step fade-in">
+                        <h3>3. See the Consensus</h3>
+                        <p>Our powerful engine sorts every response, clustering similar ideas together to show you what the world *really* thinks, instantly.</p>
+                    </div>
+                </div>
+                 <div class="interactive-example fade-in">
+                    <h4>Example: <em>"Should our company switch to a 4-day work week?"</em></h4>
+                    <div class="cluster">
+                        <div class="cluster-header">
+                            <strong>COMMON ANSWER (65%)</strong>
+                            <p>The majority of responses are strongly in favor, citing major benefits to work-life balance and morale.</p>
                         </div>
+                        <details class="cluster-details">
+                            <summary>View 6 Answers</summary>
+                            <div class="answers">
+                                <p class="answer">“Absolutely, it would be a huge boost for morale and productivity.”</p>
+                                <p class="answer">“Yes, 100%. A 4-day week is the future of work.”</p>
+                                <p class="answer">“I'm all for it, this would improve my work-life balance immensely.”</p>
+                                <p class="answer">“This is a great idea, everyone would be happier and more rested.”</p>
+                                <p class="answer">“Would love this, that extra day would make a huge difference.”</p>
+                                <p class="answer">“Definitely support this, it shows the company trusts us.”</p>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="cluster">
+                        <div class="cluster-header">
+                            <strong>COMMON ANSWER (25%)</strong>
+                            <p>A significant portion of responses are against the idea, raising concerns about client availability and overall productivity.</p>
+                        </div>
+                        <details class="cluster-details">
+                            <summary>View 4 Answers</summary>
+                             <div class="answers">
+                                <p class="answer">“No way, our clients expect us to be available five days a week.”</p>
+                                <p class="answer">“This is a terrible idea, productivity would plummet.”</p>
+                                <p class="answer">“I think this would hurt our company's competitiveness.”</p>
+                                <p class="answer">“Absolutely not, we can't afford to lose a whole workday.”</p>
+                            </div>
+                        </details>
+                    </div>
+                    <div class="cluster">
+                        <div class="cluster-header">
+                            <strong>COMMON ANSWER (10%)</strong>
+                            <p>A smaller group is open to the idea but suggests a more cautious approach, like starting with a pilot program.</p>
+                        </div>
+                        <details class="cluster-details">
+                            <summary>View 3 Answers</summary>
+                             <div class="answers">
+                                <p class="answer">“It could work, but only if we plan the rollout very carefully.”</p>
+                                <p class="answer">“I'm open to it, but we need to see the data on how it impacts performance.”</p>
+                                <p class="answer">“Maybe we could try it as a pilot program first?”</p>
+                            </div>
+                        </details>
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
 
-        <!-- Demo Page -->
-        <div id="demo" class="page">
-            <section class="container mx-auto px-6 py-16">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Clarity Engine Demo</h2>
-                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Ask a question to see how our AI works. For this demo, try asking: <strong class="text-blue-600">"Should our company switch to a 4-day work week?"</strong></p>
-                </div>
+        <section class="key-benefits-section">
+            <div class="container">
+                 <h2 class="text-center">Find Clarity in the Crowd</h2>
+                 <div class="benefits-grid">
+                     <div class="benefit-item fade-in">
+                         <h4>For the Curious</h4>
+                         <p>Get straight to the heart of any matter. Understand the most prevalent viewpoints on difficult topics without bias.</p>
+                     </div>
+                     <div class="benefit-item fade-in">
+                         <h4>For the Knowledgeable</h4>
+                         <p>Your experience matters. Answer questions where your insights can make a difference and help others.</p>
+                     </div>
+                     <div class="benefit-item fade-in">
+                         <h4>For Everyone</h4>
+                         <p>Learn more about the world and the people in it. Discover common ground and the true diversity of human thought.</p>
+                     </div>
+                 </div>
+            </div>
+        </section>
 
-                <div class="max-w-3xl mx-auto">
-                    <div class="flex gap-2">
-                        <input type="text" id="questionInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ask a question...">
-                        <button onclick="askQuestion()" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">Ask</button>
-                    </div>
-                </div>
-
-                <div id="resultsContainer" class="mt-12 max-w-4xl mx-auto">
-                    <!-- Results will be injected here by JavaScript -->
-                </div>
-            </section>
-        </div>
+        <section id="ask" class="cta-section text-center">
+            <div class="container fade-in">
+                <h2>Ready to find out what the world thinks?</h2>
+                <a href="#" class="btn btn-secondary">Join Clarion Today</a>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-400 py-8">
-        <div class="container mx-auto px-6 text-center">
-            <div class="mb-4">
-                <a href="https://www.instagram.com/ClarionAppOfficial" target="_blank" class="inline-block bg-gray-700 p-3 rounded-full hover:bg-blue-600 transition-colors">
-                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.024.06 1.378.06 3.808s-.012 2.784-.06 3.808c-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.024.048-1.378.06-3.808.06s-2.784-.013-3.808-.06c-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.048-1.024-.06-1.378-.06-3.808s.012-2.784.06-3.808c.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 016.08 2.525c.636-.247 1.363-.416 2.427-.465C9.53 2.013 9.884 2 12.315 2zm-1.04 2.54a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627V5.167a.627.627 0 00-.627-.627h-1.392zm-2.36 2.36a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627V9.067a.627.627 0 00-.627-.627H8.915zm8.162 0a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627V9.067a.627.627 0 00-.627-.627h-1.392zM5.167 11.285a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627v-1.392a.627.627 0 00-.627-.627H5.167zm3.748 0a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627v-1.392a.627.627 0 00-.627-.627H8.915zm3.748 0a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627v-1.392a.627.627 0 00-.627-.627h-1.392zm3.748 0a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627v-1.392a.627.627 0 00-.627-.627h-1.392zM8.915 15.12a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627v-1.392a.627.627 0 00-.627-.627H8.915zm3.748 0a.627.627 0 00-.627.627v1.392a.627.627 0 00.627.627h1.392a.627.627 0 00.627-.627v-1.392a.627.627 0 00-.627-.627h-1.392z" clip-rule="evenodd" />
-                    </svg>
-                </a>
-            </div>
-            <p>&copy; 2025 Clarion. All Rights Reserved.</p>
+    <footer class="main-footer text-center">
+        <div class="container">
+            <p>&copy; 2025 Clarion. All rights reserved.</p>
         </div>
     </footer>
 
-<script>
-    // --- Page Navigation Logic ---
-    function showPage(pageId) {
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        // Show the target page
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-        }
-        // Update URL hash for better navigation history
-        window.location.hash = pageId;
-    }
-
-    // On initial load, check the hash and show the correct page
-    window.addEventListener('DOMContentLoaded', () => {
-        const hash = window.location.hash.substring(1);
-        if (hash) {
-            showPage(hash);
-        } else {
-            showPage('home');
-        }
-    });
-
-
-    // --- Demo Page Logic ---
-
-    // 1. Define the mock data for the demo
-    const demoData = {
-        "4-day work week": {
-            question: "Should our company switch to a 4-day work week?",
-            clusters: [
-                {
-                    summary: "The majority of responses are strongly in favor, citing major benefits to work-life balance and morale.",
-                    percentage: 65,
-                    answers: [
-                        "Absolutely, it would be a huge boost for morale and productivity.",
-                        "Yes, 100%. A 4-day week is the future of work.",
-                        "I'm all for it, this would improve my work-life balance immensely.",
-                        "This is a great idea, everyone would be happier and more rested.",
-                        "Would love this, that extra day would make a huge difference.",
-                        "Definitely support this, it shows the company trusts us."
-                    ]
-                },
-                {
-                    summary: "A significant portion of responses are against the idea, raising concerns about client availability and overall productivity.",
-                    percentage: 25,
-                    answers: [
-                        "No way, our clients expect us to be available five days a week.",
-                        "This is a terrible idea, productivity would plummet.",
-                        "I think this would hurt our company's competitiveness.",
-                        "Absolutely not, we can't afford to lose a whole workday."
-                    ]
-                },
-                {
-                    summary: "A smaller group is open to the idea but suggests a more cautious approach, like starting with a pilot program.",
-                    percentage: 10,
-                    answers: [
-                        "It could work, but only if we plan the rollout very carefully.",
-                        "I'm open to it, but we need to see the data on how it impacts performance.",
-                        "Maybe we could try it as a pilot program first?"
-                    ]
-                }
-            ]
-        }
-    };
-
-    // 2. Function to handle the "Ask" button click
-    function askQuestion() {
-        const input = document.getElementById('questionInput');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const questionText = input.value.toLowerCase();
-
-        // Clear previous results
-        resultsContainer.innerHTML = '';
-
-        // Simple check if the input contains the keywords for our demo question
-        if (questionText.includes('4-day') || questionText.includes('four-day') || questionText.includes('work week')) {
-            displayResults(demoData["4-day work week"]);
-        } else {
-            resultsContainer.innerHTML = `
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg" role="alert">
-                    <p class="font-bold">Demo Question Not Found</p>
-                    <p>For this demo, we only have data for the question: "Should our company switch to a 4-day work week?". Please try asking that.</p>
-                </div>
-            `;
-        }
-    }
-    
-    // 3. Function to render the results on the page
-    function displayResults(data) {
-        const resultsContainer = document.getElementById('resultsContainer');
-        
-        const questionHTML = `<h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Results for: "${data.question}"</h3>`;
-        resultsContainer.innerHTML += questionHTML;
-
-        data.clusters.forEach((cluster, index) => {
-            const clusterId = `cluster-${index}`;
-            const answerListId = `answers-${index}`;
-
-            const clusterHTML = `
-                <div class="bg-white border border-gray-200 rounded-lg shadow-md mb-6 overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-sm font-semibold text-blue-600">COMMON ANSWER (${cluster.percentage}%)</p>
-                                <p class="text-lg text-gray-800 mt-2">${cluster.summary}</p>
-                            </div>
-                            <div class="text-right ml-4">
-                                <button onclick="toggleAnswers('${answerListId}')" class="text-sm font-semibold text-blue-600 hover:text-blue-800">
-                                    View ${cluster.answers.length} Answers
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="${answerListId}" class="answer-list bg-gray-50 border-t border-gray-200">
-                        <ul class="p-6 space-y-3">
-                            ${cluster.answers.map(answer => `<li class="text-gray-700 italic">“${answer}”</li>`).join('')}
-                        </ul>
-                    </div>
-                </div>
-            `;
-            resultsContainer.innerHTML += clusterHTML;
-        });
-    }
-
-    // 4. Function to toggle visibility of the raw answers
-    function toggleAnswers(answerListId) {
-        const answerList = document.getElementById(answerListId);
-        if (answerList.style.maxHeight && answerList.style.maxHeight !== '0px') {
-            answerList.style.maxHeight = '0px';
-        } else {
-            // Set max-height to the scroll height to animate open
-            answerList.style.maxHeight = answerList.scrollHeight + 'px';
-        }
-    }
-
-</script>
-
+    <script src="js/script.js"></script>
 </body>
 </html>
