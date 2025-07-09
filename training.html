@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnonAsk - Data Training</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <a href="index.html" class="nav-logo">AnonAsk</a>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="training.html" class="active">Training</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="training-section">
+            <div class="container">
+                <h1 class="text-center">AnonAsk Data Training</h1>
+                <p class="text-center subtitle">Use this page to add new questions and provide answers to train the system.</p>
+
+                <!-- Ask a Question Form -->
+                <div class="training-form-container fade-in">
+                    <h2>1. Ask a New Question</h2>
+                    <form id="question-form">
+                        <div class="form-group">
+                            <label for="question-text">Enter a new question for the world:</label>
+                            <input type="text" id="question-text" placeholder="e.g., What is the best way to learn a new language?" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Question</button>
+                    </form>
+                </div>
+
+                <!-- Answer a Question Form -->
+                <div class="training-form-container fade-in">
+                    <h2>2. Answer a Question</h2>
+                    <div id="answer-section-content">
+                        <div class="question-to-answer">
+                            <p><strong>Question:</strong></p>
+                            <p id="current-question" class="question-display">Loading the next question...</p>
+                        </div>
+                        <form id="answer-form">
+                            <div class="form-group">
+                                <label for="answer-text">Your Answer:</label>
+                                <textarea id="answer-text" rows="4" placeholder="Provide a clear, concise answer." required></textarea>
+                            </div>
+                            <div class="button-group">
+                                <button type="submit" class="btn btn-secondary">Submit Answer & Get Next</button>
+                                <button type="button" id="next-question-btn" class="btn btn-tertiary">Skip & Get Next</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                 <!-- Message area for status updates -->
+                <div id="status-message" class="status-message"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer text-center">
+        <div class="container">
+            <p>&copy; 2025 AnonAsk. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // IMPORTANT: Replace with your actual Firebase project configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Import functions from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, serverTimestamp, query, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        const questionForm = document.getElementById('question-form');
+        const questionText = document.getElementById('question-text');
+        const answerForm = document.getElementById('answer-form');
+        const answerText = document.getElementById('answer-text');
+        const currentQuestionElement = document.getElementById('current-question');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const statusMessage = document.getElementById('status-message');
+
+        let currentQuestionId = null;
+        let allQuestions = [];
+        let lastVisible = null; // for pagination
+
+        // --- FUNCTIONS ---
+
+        // Function to display status messages
+        function showStatus(message, isError = false) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message'; // Reset classes
+            if (isError) {
+                statusMessage.classList.add('visible', 'error');
+            } else {
+                statusMessage.classList.add('visible', 'success');
+            }
+            setTimeout(() => {
+                statusMessage.classList.remove('visible');
+            }, 3000);
+        }
+
+        // Function to fetch a random question from the database
+        async function fetchAndDisplayQuestion() {
+            currentQuestionElement.textContent = 'Loading...';
+            try {
+                // For simplicity, we fetch all questions. For larger datasets, pagination would be better.
+                if (allQuestions.length === 0) {
+                    const querySnapshot = await getDocs(collection(db, "questions"));
+                    querySnapshot.forEach((doc) => {
+                        allQuestions.push({ id: doc.id, ...doc.data() });
+                    });
+                }
+
+                if (allQuestions.length > 0) {
+                    // Get a random question
+                    const randomIndex = Math.floor(Math.random() * allQuestions.length);
+                    const question = allQuestions[randomIndex];
+                    currentQuestionElement.textContent = question.text;
+                    currentQuestionId = question.id;
+                } else {
+                    currentQuestionElement.textContent = 'No questions found. Please add a question first.';
+                    currentQuestionId = null;
+                }
+            } catch (e) {
+                console.error("Error fetching question: ", e);
+                showStatus("Error fetching question.", true);
+                currentQuestionElement.textContent = 'Could not load question.';
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // Handle new question submission
+        questionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newQuestion = questionText.value.trim();
+            if (newQuestion) {
+                try {
+                    const docRef = await addDoc(collection(db, "questions"), {
+                        text: newQuestion,
+                        timestamp: serverTimestamp()
+                    });
+                    showStatus("Question added successfully!");
+                    questionText.value = ''; // Clear input
+                    // Add new question to our local cache to be available immediately
+                    allQuestions.push({ id: docRef.id, text: newQuestion });
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    showStatus("Error adding question.", true);
+                }
+            }
+        });
+
+        // Handle new answer submission
+        answerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newAnswer = answerText.value.trim();
+            if (newAnswer && currentQuestionId) {
+                try {
+                    const questionDocRef = doc(db, "questions", currentQuestionId);
+                    await addDoc(collection(questionDocRef, "answers"), {
+                        text: newAnswer,
+                        timestamp: serverTimestamp()
+                    });
+                    showStatus("Answer submitted! Loading next question.");
+                    answerText.value = ''; // Clear textarea
+                    fetchAndDisplayQuestion(); // Load the next question
+                } catch (e) {
+                    console.error("Error adding answer: ", e);
+                    showStatus("Error submitting answer.", true);
+                }
+            } else if (!currentQuestionId) {
+                showStatus("No question loaded to answer.", true);
+            }
+        });
+
+        // Handle "Next Question" button click
+        nextQuestionBtn.addEventListener('click', fetchAndDisplayQuestion);
+
+        // Initial load
+        fetchAndDisplayQuestion();
+        
+        // Add fade-in logic from script.js for consistency
+        const faders = document.querySelectorAll('.fade-in');
+        const appearOptions = { threshold: 0.2, rootMargin: "0px 0px -50px 0px" };
+        const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('visible');
+                appearOnScroll.unobserve(entry.target);
+            });
+        }, appearOptions);
+        faders.forEach(fader => appearOnScroll.observe(fader));
+
+    </script>
+</body>
+</html>
