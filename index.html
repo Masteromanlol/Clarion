@@ -3,141 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnonAsk - Ask Anonymously, Get Real Answers</title>
-    <link rel="stylesheet" href="style.css">
+    <title>AnonAsk - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-    <header class="main-header">
-        <nav class="navbar">
-            <div class="container">
-                <a href="index.html" class="nav-logo">AnonAsk</a>
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="active">Home</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="training.html">Training</a></li>
-                </ul>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">AnonAsk</a>
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search questions, topics, or keywords...">
             </div>
-        </nav>
+            <div class="user-menu">
+                <a href="profile.html" id="user-avatar-link" class="user-avatar">?</a>
+            </div>
+        </div>
     </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero-section text-center">
-            <div class="container">
-                <h1>Ask Anonymously. Get Real Answers.</h1>
-                <p class="sub-headline">AnonAsk lets you ask any question with complete privacy. Our community provides the answers, and our engine reveals the true consensus.</p>
-                <a href="#ask" class="btn btn-primary">Ask Your First Question</a>
-            </div>
-        </section>
-
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="how-it-works-section">
-            <div class="container">
-                <h2 class="text-center">How AnonAsk Works</h2>
-                <div class="steps-grid">
-                    <div class="step fade-in">
-                        <h3>1. Ask Anonymously</h3>
-                        <p>Your identity is always protected when you ask. This freedom allows for honest, vulnerable questions on any topic imaginable.</p>
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-summary card">
+                <div id="sidebar-profile-img" class="profile-img">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <h3 id="sidebar-profile-name" class="profile-name">Loading...</h3>
+                <p id="sidebar-profile-handle" class="profile-handle">@loading...</p>
+                <div class="profile-stats">
+                    <div>
+                        <strong id="sidebar-following-count">0</strong>
+                        <span>Following</span>
                     </div>
-                    <div class="step fade-in">
-                        <h3>2. Answer with Credibility</h3>
-                        <p>Answers are provided by community members who stand by their knowledge. This transparency builds trust and accountability.</p>
-                    </div>
-                    <div class="step fade-in">
-                        <h3>3. Discover the Consensus</h3>
-                        <p>Our powerful engine sorts every response, clustering similar ideas together to show you what the world *really* thinks, instantly.</p>
+                    <div>
+                        <strong id="sidebar-followers-count">0</strong>
+                        <span>Followers</span>
                     </div>
                 </div>
-                 <!-- Interactive Example -->
-                <div class="interactive-example fade-in">
-                    <h4>Example: <em>"Should our company switch to a 4-day work week?"</em></h4>
-                    <div class="cluster">
-                        <div class="cluster-header">
-                            <strong>COMMON ANSWER (65%)</strong>
-                            <p>The majority of responses are strongly in favor, citing major benefits to work-life balance and morale.</p>
-                        </div>
-                        <details class="cluster-details">
-                            <summary>View 6 Answers</summary>
-                            <div class="answers">
-                                <p class="answer">“Absolutely, it would be a huge boost for morale and productivity.”</p>
-                                <p class="answer">“Yes, 100%. A 4-day week is the future of work.”</p>
-                                <p class="answer">“I'm all for it, this would improve my work-life balance immensely.”</p>
-                                <p class="answer">“This is a great idea, everyone would be happier and more rested.”</p>
-                                <p class="answer">“Would love this, that extra day would make a huge difference.”</p>
-                                <p class="answer">“Definitely support this, it shows the company trusts us.”</p>
-                            </div>
-                        </details>
-                    </div>
-                    <div class="cluster">
-                        <div class="cluster-header">
-                            <strong>COMMON ANSWER (25%)</strong>
-                            <p>A significant portion of responses are against the idea, raising concerns about client availability and overall productivity.</p>
-                        </div>
-                        <details class="cluster-details">
-                            <summary>View 4 Answers</summary>
-                             <div class="answers">
-                                <p class="answer">“No way, our clients expect us to be available five days a week.”</p>
-                                <p class="answer">“This is a terrible idea, productivity would plummet.”</p>
-                                <p class="answer">“I think this would hurt our company's competitiveness.”</p>
-                                <p class="answer">“Absolutely not, we can't afford to lose a whole workday.”</p>
-                            </div>
-                        </details>
-                    </div>
-                    <div class="cluster">
-                        <div class="cluster-header">
-                            <strong>COMMON ANSWER (10%)</strong>
-                            <p>A smaller group is open to the idea but suggests a more cautious approach, like starting with a pilot program.</p>
-                        </div>
-                        <details class="cluster-details">
-                            <summary>View 3 Answers</summary>
-                             <div class="answers">
-                                <p class="answer">“It could work, but only if we plan the rollout very carefully.”</p>
-                                <p class="answer">“I'm open to it, but we need to see the data on how it impacts performance.”</p>
-                                <p class="answer">“Maybe we could try it as a pilot program first?”</p>
-                            </div>
-                        </details>
-                    </div>
-                </div>
+                <a href="profile.html" class="btn btn-secondary">View Profile</a>
             </div>
-        </section>
+            <nav class="card">
+                <a href="#" class="nav-item active"><i class="fas fa-home"></i> Home</a>
+                <a href="#" class="nav-item"><i class="fas fa-fire"></i> Popular</a>
+                <a href="#" class="nav-item"><i class="fas fa-globe"></i> All Questions</a>
+                <a href="#" class="nav-item"><i class="fas fa-bookmark"></i> Saved</a>
+            </nav>
+        </aside>
 
-        <!-- Key Benefits Section -->
-        <section class="key-benefits-section">
-            <div class="container">
-                 <h2 class="text-center">Find Clarity in the Crowd</h2>
-                 <div class="benefits-grid">
-                     <div class="benefit-item fade-in">
-                         <h4>For the Curious</h4>
-                         <p>Get straight to the heart of any matter. Understand the most prevalent viewpoints on difficult topics without bias.</p>
-                     </div>
-                     <div class="benefit-item fade-in">
-                         <h4>For the Knowledgeable</h4>
-                         <p>Your experience matters. Answer questions where your insights can make a difference and help others.</p>
-                     </div>
-                     <div class="benefit-item fade-in">
-                         <h4>For Everyone</h4>
-                         <p>Learn more about the world and the people in it. Discover common ground and the true diversity of human thought.</p>
-                     </div>
-                 </div>
+        <!-- Main Content -->
+        <main class="main-feed">
+            <div class="ask-question-box card">
+                <input type="text" id="ask-input" class="ask-input" placeholder="What's on your mind? Ask the world anonymously...">
+                <button id="ask-btn" class="btn btn-primary">Ask</button>
             </div>
-        </section>
-
-        <!-- Final CTA Section -->
-        <section id="ask" class="cta-section text-center">
-            <div class="container fade-in">
-                <h2>Ready to ask the world?</h2>
-                <a href="#" class="btn btn-secondary">Join AnonAsk Today</a>
+            
+            <!-- Question Posts Container -->
+            <div id="posts-container">
+                <div class="card"><p>Loading questions...</p></div>
             </div>
-        </section>
-    </main>
+        </main>
 
-    <footer class="main-footer text-center">
-        <div class="container">
-            <p>&copy; 2025 AnonAsk. All rights reserved.</p>
-        </div>
-    </footer>
+        <!-- Right Sidebar -->
+        <aside class="sidebar">
+            <div class="trending-topics card">
+                <h4>Trending Topics</h4>
+                <ul>
+                    <li><a href="#">#WorkLifeBalance</a></li>
+                    <li><a href="#">#CareerAdvice</a></li>
+                    <li><a href="#">#Technology</a></li>
+                </ul>
+            </div>
+        </aside>
+    </div>
 
-    <script src="script.js"></script>
+    <button class="floating-btn"><i class="fas fa-plus"></i></button>
+
+    <!-- Main application script -->
+    <script type="module" src="app.js"></script>
 </body>
 </html>
