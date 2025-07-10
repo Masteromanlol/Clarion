@@ -7,8 +7,14 @@ import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, getDocs, 
 
 // --- Firebase Configuration ---
 // This configuration is automatically provided by the environment.
-const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
+const firebaseConfig = {
+  apiKey: "AIzaSyB0gtoB1Xy75srzEXtWS_1udIbAypQVN4c",
+  authDomain: "anonask-875ac.firebaseapp.com",
+  projectId: "anonask-875ac",
+  storageBucket: "anonask-875ac.firebasestorage.app",
+  messagingSenderId: "879194271225",
+  appId: "1:879194271225:web:57db8450a0c1c3c70ae128"
+};
 // --- Initialize Firebase ---
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
