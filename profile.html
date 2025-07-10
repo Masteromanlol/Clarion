@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - AnonAsk</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">AnonAsk</a>
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="Search questions, topics, or keywords...">
+            </div>
+            <div class="user-menu">
+                <a href="profile.html" id="user-avatar-link" class="user-avatar">?</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Main Content -->
+        <main class="main-feed" style="grid-column: 1 / -1;">
+            <div id="profile-details-container" class="profile-header">
+                <p>Loading profile...</p>
+            </div>
+
+            <div class="profile-content">
+                <div class="profile-tabs">
+                    <button class="tab-btn active">My Questions</button>
+                    <button class="tab-btn">My Answers</button>
+                </div>
+                <div id="profile-posts-container" class="posts-container">
+                    <div class="card"><p>Loading questions...</p></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Profile page script -->
+    <script type="module" src="profile.js"></script>
+</body>
+</html>
