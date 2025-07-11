@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AnonAsk - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -37,31 +40,32 @@
 
         <!-- Main Content -->
         <main class="main-feed">
-            <div class="ask-question-box card">
-                <textarea id="ask-input" class="ask-input" placeholder="What's on your mind? Ask the world anonymously..." rows="3"></textarea>
-                <input type="text" id="tags-input" class="tags-input" placeholder="Add tags, separated by commas (e.g., tech, career)">
-                <div class="ask-footer">
-                    <button id="ask-btn" class="btn btn-primary">Ask</button>
+            <div class="main-tabs">
+                <div class="tab-link active" data-tab="home">Home</div>
+                <div class="tab-link" data-tab="answer">Answer</div>
+            </div>
+
+            <!-- Home Tab Content -->
+            <div id="home" class="tab-content active">
+                <div class="ask-question-box card">
+                    <textarea id="ask-input" class="ask-input" placeholder="What's on your mind? Ask the world anonymously..." rows="3"></textarea>
+                    <input type="text" id="tags-input" class="tags-input" placeholder="Add tags, separated by commas (e.g., tech, career)">
+                    <div class="ask-footer">
+                        <button id="ask-btn" class="btn btn-primary">Ask</button>
+                    </div>
+                </div>
+                <div id="posts-container">
+                    <div class="card"><p>Loading questions...</p></div>
                 </div>
             </div>
-            
-            <div id="posts-container">
-                <div class="card"><p>Loading questions...</p></div>
+
+            <!-- Answer Tab Content -->
+            <div id="answer" class="tab-content">
+                <div id="answer-feed-container">
+                    <div class="card"><p>Loading questions to answer...</p></div>
+                </div>
             </div>
         </main>
-        
-        <!-- Right Sidebar -->
-        <aside class="sidebar">
-            <div class="trending-topics card">
-                <h4>Trending Topics</h4>
-                <ul>
-                    <li><a href="#">#WorkLifeBalance</a></li>
-                    <li><a href="#">#CareerAdvice</a></li>
-                    <li><a href="#">#Technology</a></li>
-                    <li><a href="#">#Learning</a></li>
-                </ul>
-            </div>
-        </aside>
     </div>
 
     <script type="module" src="app.js"></script>

@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Question - AnonAsk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -19,18 +22,21 @@
 
     <div class="main-container" style="grid-template-columns: 1fr;">
         <main class="main-feed">
-            <div id="question-container" class="card question-full-content">
+            <div id="question-container" class="card">
                 <p>Loading question...</p>
             </div>
 
-            <div id="comments" class="comment-section card">
-                <h3>Comments</h3>
-                <div class="comment-form">
-                    <textarea id="comment-input" class="comment-input" placeholder="Add a comment..." rows="3"></textarea>
-                    <button id="comment-submit-btn" class="btn btn-primary" style="align-self: flex-end;">Comment</button>
+            <div id="answers" class="answer-section">
+                <h3 id="answer-count">0 Answers</h3>
+                <div class="card answer-form">
+                    <h4>Your Answer</h4>
+                    <textarea id="answer-input" class="ask-input" placeholder="Write your answer..." rows="5"></textarea>
+                    <div class="ask-footer">
+                        <button id="answer-submit-btn" class="btn btn-primary">Submit Answer</button>
+                    </div>
                 </div>
-                <div id="comments-container">
-                    <p>Loading comments...</p>
+                <div id="answers-container">
+                    <!-- Answers will be rendered here -->
                 </div>
             </div>
         </main>

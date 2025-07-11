@@ -8,9 +8,10 @@ import {
 
 // --- STATE ---
 let currentUser = null;
+let answerFeedLoaded = false;
 
 // --- DOM ELEMENTS ---
-let postsContainer, askInput, tagsInput, askBtn;
+let postsContainer, answerFeedContainer, askInput, tagsInput, askBtn;
 
 // --- UI RENDERING ---
 const renderUserProfile = (userData) => {
@@ -36,15 +37,15 @@ const renderUserProfile = (userData) => {
   if (userAvatarLink) userAvatarLink.textContent = userInitial;
 };
 
-const renderPosts = (posts) => {
-  if (!postsContainer) return;
+const renderPosts = (posts, container) => {
+  if (!container) return;
   
   if (posts.length === 0) {
-    postsContainer.innerHTML = '<div class="card"><p>No questions have been asked yet. Be the first!</p></div>';
+    container.innerHTML = '<div class="card"><p>No questions here right now.</p></div>';
     return;
   }
 
-  postsContainer.innerHTML = posts.map(post => {
+  container.innerHTML = posts.map(post => {
     const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleDateString() : 'Just now';
     const tagsHTML = (post.tags || []).map(tag => `<span class="tag">#${tag}</span>`).join('');
     
@@ -68,10 +69,12 @@ const renderPosts = (posts) => {
           <button class="post-action-btn vote-btn" data-vote="down" data-id="${post.id}">
             <i class="fas fa-arrow-down"></i> <span id="downvotes-${post.id}">${post.downvotes || 0}</span>
           </button>
-          <a href="question.html?id=${post.id}#comments" class="post-action-btn">
-            <i class="fas fa-comment"></i> ${post.commentCount || 0} Comments
+          <a href="question.html?id=${post.id}#answers" class="post-action-btn">
+            <i class="far fa-lightbulb"></i> ${post.answerCount || 0} Answers
           </a>
-          <button class="post-action-btn share-btn" data-id="${post.id}"><i class="fas fa-share"></i> Share</button>
+          <a href="question.html?id=${post.id}#comments" class="post-action-btn">
+            <i class="far fa-comment"></i> ${post.commentCount || 0} Comments
+          </a>
         </div>
       </div>
     `;
@@ -84,7 +87,6 @@ const getUserProfile = async (uid) => {
   let userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
-    console.log("Creating new user profile for UID:", uid);
     const shortId = uid.substring(0, 6);
     const newUser = {
       username: `Anonymous #${shortId}`,
@@ -93,7 +95,7 @@ const getUserProfile = async (uid) => {
       followersCount: 0,
       followingCount: 0,
     };
-    await setDoc(userRef, newUser).catch(e => console.error("Error creating user profile:", e));
+    await setDoc(userRef, newUser);
     userSnap = await getDoc(userRef);
   }
   return { id: userSnap.id, ...userSnap.data() };
@@ -117,13 +119,14 @@ const submitQuestion = async () => {
       upvotes: 0,
       downvotes: 0,
       voteCount: 0,
-      commentCount: 0,
+      answerCount: 0,
+      commentCount: 0, // Initialize comment count
     });
     askInput.value = '';
     if (tagsInput) tagsInput.value = '';
   } catch (error) {
     console.error("Firestore Write Error in submitQuestion:", error);
-    alert("Error: Could not submit your question. Please check the console for details.");
+    alert("Error: Could not submit your question.");
   }
 };
 
@@ -133,105 +136,92 @@ const handleVote = async (questionId, voteType) => {
     const voteRef = doc(db, `artifacts/${appId}/users/${currentUser.id}/votes`, questionId);
     const questionRef = doc(db, `artifacts/${appId}/public/data/questions`, questionId);
 
-    try {
-        await runTransaction(db, async (transaction) => {
-            const voteDoc = await transaction.get(voteRef);
-            const questionDoc = await transaction.get(questionRef);
-            if (!questionDoc.exists()) throw "Question does not exist!";
+    await runTransaction(db, async (transaction) => {
+        const voteDoc = await transaction.get(voteRef);
+        const questionDoc = await transaction.get(questionRef);
+        if (!questionDoc.exists()) throw "Question does not exist!";
 
-            const currentVote = voteDoc.exists() ? voteDoc.data().type : null;
-            let upvoteIncrementValue = 0;
-            let downvoteIncrementValue = 0;
+        const currentVote = voteDoc.exists() ? voteDoc.data().type : null;
+        let upvoteInc = 0;
+        let downvoteInc = 0;
 
-            if (currentVote === voteType) {
-                if (voteType === 'up') upvoteIncrementValue = -1;
-                else downvoteIncrementValue = -1;
-                transaction.delete(voteRef);
-            } else {
-                if (currentVote === 'up') upvoteIncrementValue = -1;
-                if (currentVote === 'down') downvoteIncrementValue = -1;
-                if (voteType === 'up') upvoteIncrementValue += 1;
-                if (voteType === 'down') downvoteIncrementValue += 1;
-                transaction.set(voteRef, { type: voteType });
-            }
-            
-            transaction.update(questionRef, { 
-                upvotes: increment(upvoteIncrementValue),
-                downvotes: increment(downvoteIncrementValue),
-                voteCount: increment(upvoteIncrementValue - downvoteIncrementValue)
-            });
+        if (currentVote === voteType) {
+            if (voteType === 'up') upvoteInc = -1; else downvoteInc = -1;
+            transaction.delete(voteRef);
+        } else {
+            if (currentVote === 'up') upvoteInc = -1;
+            if (currentVote === 'down') downvoteInc = -1;
+            if (voteType === 'up') upvoteInc += 1; else downvoteInc += 1;
+            transaction.set(voteRef, { type: voteType });
+        }
+        
+        transaction.update(questionRef, { 
+            upvotes: increment(upvoteInc),
+            downvotes: increment(downvoteInc),
+            voteCount: increment(upvoteInc - downvoteInc)
         });
-    } catch (e) {
-        console.error("Vote transaction failed: ", e);
-        alert("Error: Could not process your vote. Please check the console for details.");
-    }
+    }).catch(e => console.error("Vote transaction failed: ", e));
 };
 
-const listenForQuestions = () => {
+const listenForHomeFeed = () => {
     const q = query(collection(db, `artifacts/${appId}/public/data/questions`));
-    onSnapshot(q, (querySnapshot) => {
-        const posts = [];
-        querySnapshot.forEach((doc) => {
-            posts.push({ id: doc.id, ...doc.data() });
-        });
-        posts.sort((a, b) => {
-            const aVotes = a.voteCount || 0;
-            const bVotes = b.voteCount || 0;
-            if (aVotes !== bVotes) {
-                return bVotes - aVotes;
-            }
-            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-        });
-        renderPosts(posts);
-    }, (error) => {
-        console.error("Error listening for questions:", error);
+    onSnapshot(q, (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        posts.sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0));
+        renderPosts(posts, postsContainer);
+    });
+};
+
+const listenForAnswerFeed = () => {
+    if (!currentUser) return;
+    const q = query(collection(db, `artifacts/${appId}/public/data/questions`), where("authorId", "!=", currentUser.id));
+    onSnapshot(q, (snapshot) => {
+        const posts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        posts.sort((a, b) => (a.answerCount || 0) - (b.answerCount || 0) || (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        renderPosts(posts, answerFeedContainer);
     });
 };
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
   postsContainer = document.getElementById('posts-container');
+  answerFeedContainer = document.getElementById('answer-feed-container');
   askInput = document.getElementById('ask-input');
   tagsInput = document.getElementById('tags-input');
   askBtn = document.getElementById('ask-btn');
 
-  if (askBtn) {
-    askBtn.addEventListener('click', submitQuestion);
-  }
+  // Tab switching logic
+  const tabs = document.querySelectorAll('.tab-link');
+  const tabContents = document.querySelectorAll('.tab-content');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(item => item.classList.remove('active'));
+      tab.classList.add('active');
+      const target = document.getElementById(tab.dataset.tab);
+      tabContents.forEach(content => content.classList.remove('active'));
+      target.classList.add('active');
 
-  if (askInput) {
-    askInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        submitQuestion();
+      if (tab.dataset.tab === 'answer' && !answerFeedLoaded) {
+        listenForAnswerFeed();
+        answerFeedLoaded = true;
       }
     });
-  }
+  });
+
+  if (askBtn) askBtn.addEventListener('click', submitQuestion);
 
   document.addEventListener('click', (e) => {
     if (e.target.closest('.vote-btn')) {
-      const btn = e.target.closest('.vote-btn');
-      handleVote(btn.dataset.id, btn.dataset.vote);
-    }
-    if (e.target.closest('.share-btn')) {
-      const btn = e.target.closest('.share-btn');
-      const url = `${window.location.origin}/question.html?id=${btn.dataset.id}`;
-      navigator.clipboard.writeText(url).then(() => {
-        alert('Link copied to clipboard!');
-      }).catch(() => {
-        prompt('Copy this link:', url);
-      });
+      handleVote(e.target.closest('.vote-btn').dataset.id, e.target.closest('.vote-btn').dataset.vote);
     }
   });
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      console.log("Authentication successful. User UID:", user.uid);
       currentUser = await getUserProfile(user.uid);
       renderUserProfile(currentUser);
-      listenForQuestions();
+      listenForHomeFeed();
     } else {
-      console.log("No user authenticated. Setting persistence and attempting to sign in...");
       await setAuthPersistence();
       authenticateUser();
     }
