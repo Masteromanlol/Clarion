@@ -1,9 +1,9 @@
 // firebase-config.js
 
 // Import the necessary functions from the Firebase SDKs
-// 'increment' has been added to this import line.
+// Added setPersistence and browserLocalPersistence for session management.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, getDocs, onSnapshot, serverTimestamp, where, increment, runTransaction, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- Firebase Configuration ---
@@ -26,9 +26,23 @@ const db = getFirestore(app);
 // The app ID is also provided by the environment.
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-// --- Authentication ---
-// This function handles signing the user in.
-// It prioritizes the provided auth token, falling back to anonymous sign-in.
+/**
+ * NEW: Sets the authentication persistence to be local.
+ * This ensures the user stays logged in across browser sessions.
+ */
+const setAuthPersistence = async () => {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    console.log("Auth persistence set to local.");
+  } catch (error) {
+    console.error("Error setting auth persistence:", error);
+  }
+};
+
+
+/**
+ * Handles signing the user in anonymously.
+ */
 const authenticateUser = async () => {
   try {
     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -57,8 +71,8 @@ export {
   serverTimestamp,
   onAuthStateChanged,
   authenticateUser,
+  setAuthPersistence, // New export
   where,
-  // 'increment' has been added to this export list.
   increment,
   runTransaction,
   writeBatch

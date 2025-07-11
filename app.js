@@ -2,7 +2,8 @@
 
 import {
   auth, db, appId, doc, getDoc, setDoc, collection, addDoc, query, onSnapshot,
-  serverTimestamp, onAuthStateChanged, authenticateUser, where, runTransaction, increment
+  serverTimestamp, onAuthStateChanged, authenticateUser, where, runTransaction, increment,
+  setAuthPersistence // Import the new function
 } from './firebase-config.js';
 
 // --- STATE ---
@@ -21,12 +22,23 @@ let postsContainer, askInput, tagsInput, askBtn, floatingBtn;
 const renderUserProfile = (userData) => {
   if (!userData) return;
   const userInitial = userData.username.charAt(0).toUpperCase();
-  document.getElementById('sidebar-profile-img').textContent = userInitial;
-  document.getElementById('sidebar-profile-name').textContent = userData.username;
-  document.getElementById('sidebar-profile-handle').textContent = userData.userIdHandle;
-  document.getElementById('sidebar-followers-count').textContent = userData.followersCount || 0;
-  document.getElementById('sidebar-following-count').textContent = userData.followingCount || 0;
-  document.getElementById('user-avatar-link').textContent = userInitial;
+  const sidebarProfileImg = document.getElementById('sidebar-profile-img');
+  if (sidebarProfileImg) sidebarProfileImg.textContent = userInitial;
+  
+  const sidebarProfileName = document.getElementById('sidebar-profile-name');
+  if (sidebarProfileName) sidebarProfileName.textContent = userData.username;
+
+  const sidebarProfileHandle = document.getElementById('sidebar-profile-handle');
+  if (sidebarProfileHandle) sidebarProfileHandle.textContent = userData.userIdHandle;
+
+  const sidebarFollowersCount = document.getElementById('sidebar-followers-count');
+  if (sidebarFollowersCount) sidebarFollowersCount.textContent = userData.followersCount || 0;
+
+  const sidebarFollowingCount = document.getElementById('sidebar-following-count');
+  if (sidebarFollowingCount) sidebarFollowingCount.textContent = userData.followingCount || 0;
+
+  const userAvatarLink = document.getElementById('user-avatar-link');
+  if (userAvatarLink) userAvatarLink.textContent = userInitial;
 };
 
 /**
@@ -229,7 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (askInput) {
     askInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) { // Submit on enter, unless shift is held
+        e.preventDefault();
         submitQuestion();
       }
     });
@@ -269,7 +282,9 @@ document.addEventListener('DOMContentLoaded', () => {
       renderUserProfile(currentUser);
       listenForQuestions(); // Start listening for questions after user is loaded
     } else {
-      console.log("No user authenticated. Attempting to sign in anonymously...");
+      console.log("No user authenticated. Setting persistence and attempting to sign in...");
+      // Set persistence before signing in
+      await setAuthPersistence();
       authenticateUser();
     }
   });
