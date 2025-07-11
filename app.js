@@ -2,7 +2,7 @@
 
 import {
   auth, db, appId, doc, getDoc, setDoc, collection, addDoc, query, onSnapshot,
-  serverTimestamp, onAuthStateChanged, authenticateUser
+  serverTimestamp, onAuthStateChanged, authenticateUser, where, runTransaction, increment
 } from './firebase-config.js';
 
 // --- STATE ---
@@ -11,6 +11,7 @@ let currentUser = null;
 // --- DOM ELEMENTS ---
 const postsContainer = document.getElementById('posts-container');
 const askInput = document.getElementById('ask-input');
+const tagsInput = document.getElementById('tags-input');
 const askBtn = document.getElementById('ask-btn');
 const floatingBtn = document.querySelector('.floating-btn');
 
@@ -41,24 +42,38 @@ const renderPosts = (posts) => {
   }
 
   postsContainer.innerHTML = posts.map(post => {
-    const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleString() : 'Just now';
+    const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleDateString() : 'Just now';
+    const tagsHTML = (post.tags || []).map(tag => `<span class="tag">#${tag}</span>`).join('');
+    
     return `
-      <div class="post-card card">
+      <div class="post-card card" id="post-${post.id}">
+        <a href="question.html?id=${post.id}" class="post-link">
           <div class="post-header">
-              <div class="anonymous-icon">${post.authorInitial || '?'}</div>
-              <p class="post-meta">Asked by ${post.authorHandle || 'anonymous'} • ${postDate}</p>
+            <div class="anonymous-icon">${post.authorInitial || '?'}</div>
+            <div>
+              <p class="post-meta"><strong>${post.authorHandle || 'anonymous'}</strong></p>
+              <p class="post-meta">Asked ${postDate}</p>
+            </div>
           </div>
           <h2 class="post-title">${post.title}</h2>
-          <div class="post-footer">
-              <button class="post-action-btn"><i class="fas fa-arrow-up"></i> ${post.upvotes || 0}</button>
-              <button class="post-action-btn"><i class="fas fa-arrow-down"></i> ${post.downvotes || 0}</button>
-              <button class="post-action-btn"><i class="fas fa-comment"></i> ${post.commentCount || 0} Comments</button>
-          </div>
+          <div class="post-tags">${tagsHTML}</div>
+        </a>
+        <div class="post-footer">
+          <button class="post-action-btn vote-btn" data-vote="up" data-id="${post.id}">
+            <i class="fas fa-arrow-up"></i> <span id="upvotes-${post.id}">${post.upvotes || 0}</span>
+          </button>
+          <button class="post-action-btn vote-btn" data-vote="down" data-id="${post.id}">
+            <i class="fas fa-arrow-down"></i> <span id="downvotes-${post.id}">${post.downvotes || 0}</span>
+          </button>
+          <a href="question.html?id=${post.id}#comments" class="post-action-btn">
+            <i class="fas fa-comment"></i> ${post.commentCount || 0} Comments
+          </a>
+          <button class="post-action-btn share-btn" data-id="${post.id}"><i class="fas fa-share"></i> Share</button>
+        </div>
       </div>
     `;
   }).join('');
 };
-
 
 // --- FIRESTORE SERVICE FUNCTIONS ---
 
@@ -75,7 +90,7 @@ const getUserProfile = async (uid) => {
     // Create a new profile for the first-time anonymous user
     const shortId = uid.substring(0, 6);
     const newUser = {
-      username: `Anonymous User #${shortId}`,
+      username: `Anonymous #${shortId}`,
       userIdHandle: `@anon_${shortId}`,
       createdAt: serverTimestamp(),
       followersCount: 0,
@@ -89,29 +104,84 @@ const getUserProfile = async (uid) => {
 
 /**
  * Submits a new question to Firestore.
- * @param {string} title - The title of the question.
  */
-const submitQuestion = async (title) => {
-  if (!title.trim() || !currentUser) {
+const submitQuestion = async () => {
+  const title = askInput.value.trim();
+  if (!title || !currentUser) {
     console.error("Cannot submit empty question or user not logged in.");
     return;
   }
 
+  const tags = tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
   try {
     await addDoc(collection(db, `artifacts/${appId}/public/data/questions`), {
-      title: title,
+      title,
+      tags,
       authorId: currentUser.id,
       authorHandle: currentUser.userIdHandle,
       authorInitial: currentUser.username.charAt(0).toUpperCase(),
       createdAt: serverTimestamp(),
       upvotes: 0,
       downvotes: 0,
+      voteCount: 0,
       commentCount: 0,
     });
     askInput.value = ''; // Clear input on success
+    if (tagsInput) tagsInput.value = '';
   } catch (error) {
     console.error("Error adding document: ", error);
   }
+};
+
+/**
+ * Handles voting on questions with transaction support.
+ * @param {string} questionId - The ID of the question to vote on.
+ * @param {string} voteType - Either 'up' or 'down'.
+ */
+const handleVote = async (questionId, voteType) => {
+    if (!currentUser) { 
+        alert("You must be logged in to vote."); 
+        return; 
+    }
+    
+    const voteRef = doc(db, `artifacts/${appId}/users/${currentUser.id}/votes`, questionId);
+    const questionRef = doc(db, `artifacts/${appId}/public/data/questions`, questionId);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const voteDoc = await transaction.get(voteRef);
+            const questionDoc = await transaction.get(questionRef);
+            if (!questionDoc.exists()) throw "Question does not exist!";
+
+            const currentVote = voteDoc.exists() ? voteDoc.data().type : null;
+            let upvoteIncrement = 0;
+            let downvoteIncrement = 0;
+
+            if (currentVote === voteType) { // Undoing vote
+                if (voteType === 'up') upvoteIncrement = -1;
+                else downvoteIncrement = -1;
+                transaction.delete(voteRef);
+            } else { // New vote or changing vote
+                if (currentVote === 'up') upvoteIncrement = -1;
+                if (currentVote === 'down') downvoteIncrement = -1;
+                if (voteType === 'up') upvoteIncrement += 1;
+                if (voteType === 'down') downvoteIncrement += 1;
+                transaction.set(voteRef, { type: voteType });
+            }
+
+            const newUpvotes = (questionDoc.data().upvotes || 0) + upvoteIncrement;
+            const newDownvotes = (questionDoc.data().downvotes || 0) + downvoteIncrement;
+            
+            transaction.update(questionRef, {
+                upvotes: newUpvotes,
+                downvotes: newDownvotes,
+                voteCount: newUpvotes - newDownvotes
+            });
+        });
+    } catch (e) {
+        console.error("Vote transaction failed: ", e);
+    }
 };
 
 /**
@@ -124,8 +194,15 @@ const listenForQuestions = () => {
         querySnapshot.forEach((doc) => {
             posts.push({ id: doc.id, ...doc.data() });
         });
-        // Sort by creation date, newest first
-        posts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+        // Sort by vote count (popularity), then by creation date
+        posts.sort((a, b) => {
+            const aVotes = a.voteCount || 0;
+            const bVotes = b.voteCount || 0;
+            if (aVotes !== bVotes) {
+                return bVotes - aVotes; // Higher vote count first
+            }
+            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0); // Newer first
+        });
         renderPosts(posts);
     }, (error) => {
         console.error("Error listening for questions:", error);
@@ -133,17 +210,39 @@ const listenForQuestions = () => {
     });
 };
 
-
 // --- EVENT LISTENERS ---
-askBtn.addEventListener('click', () => submitQuestion(askInput.value));
+askBtn.addEventListener('click', submitQuestion);
+
 askInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
-    submitQuestion(askInput.value);
+    submitQuestion();
   }
 });
-floatingBtn.addEventListener('click', () => {
-  askInput.focus();
-  askInput.scrollIntoView({ behavior: 'smooth' });
+
+// Optional floating button support
+if (floatingBtn) {
+  floatingBtn.addEventListener('click', () => {
+    askInput.focus();
+    askInput.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+// Delegated event listeners for dynamic content
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.vote-btn')) {
+        const btn = e.target.closest('.vote-btn');
+        handleVote(btn.dataset.id, btn.dataset.vote);
+    }
+    if (e.target.closest('.share-btn')) {
+        const btn = e.target.closest('.share-btn');
+        const url = `${window.location.origin}/question.html?id=${btn.dataset.id}`;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Link copied to clipboard!');
+        }).catch(() => {
+            // Fallback for browsers that don't support clipboard API
+            prompt('Copy this link:', url);
+        });
+    }
 });
 
 // --- INITIALIZATION ---

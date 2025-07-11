@@ -11,11 +11,11 @@
     <header class="header">
         <div class="header-content">
             <a href="index.html" class="logo">AnonAsk</a>
-            <div class="search-bar">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" class="search-input" placeholder="Search questions, topics, or keywords...">
-            </div>
             <div class="user-menu">
+                <div class="notification-bell">
+                    <i class="far fa-bell"></i>
+                    <!-- <div class="notification-dot"></div> -->
+                </div>
                 <a href="profile.html" id="user-avatar-link" class="user-avatar">?</a>
             </div>
         </div>
@@ -25,60 +25,37 @@
         <!-- Left Sidebar -->
         <aside class="sidebar">
             <div class="profile-summary card">
-                <div id="sidebar-profile-img" class="profile-img">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-                <h3 id="sidebar-profile-name" class="profile-name">Loading...</h3>
-                <p id="sidebar-profile-handle" class="profile-handle">@loading...</p>
+                <div id="sidebar-profile-img" class="profile-img"><i class="fas fa-spinner fa-spin"></i></div>
+                <h3 id="sidebar-profile-name">Loading...</h3>
+                <p id="sidebar-profile-handle">@loading...</p>
                 <div class="profile-stats">
-                    <div>
-                        <strong id="sidebar-following-count">0</strong>
-                        <span>Following</span>
-                    </div>
-                    <div>
-                        <strong id="sidebar-followers-count">0</strong>
-                        <span>Followers</span>
-                    </div>
+                    <div><strong id="sidebar-following-count">0</strong><span>Following</span></div>
+                    <div><strong id="sidebar-followers-count">0</strong><span>Followers</span></div>
                 </div>
                 <a href="profile.html" class="btn btn-secondary">View Profile</a>
             </div>
             <nav class="card">
-                <a href="#" class="nav-item active"><i class="fas fa-home"></i> Home</a>
-                <a href="#" class="nav-item"><i class="fas fa-fire"></i> Popular</a>
-                <a href="#" class="nav-item"><i class="fas fa-globe"></i> All Questions</a>
-                <a href="#" class="nav-item"><i class="fas fa-bookmark"></i> Saved</a>
+                <a href="guidelines.html" class="btn btn-secondary" style="justify-content: center;">Community Guidelines</a>
             </nav>
         </aside>
 
         <!-- Main Content -->
         <main class="main-feed">
             <div class="ask-question-box card">
-                <input type="text" id="ask-input" class="ask-input" placeholder="What's on your mind? Ask the world anonymously...">
-                <button id="ask-btn" class="btn btn-primary">Ask</button>
+                <textarea id="ask-input" class="ask-input" placeholder="What's on your mind? Ask the world anonymously..." rows="3"></textarea>
+                <input type="text" id="tags-input" class="tags-input" placeholder="Add tags, separated by commas (e.g., tech, career)">
+                <div class="ask-footer">
+                    <p class="char-counter"></p>
+                    <button id="ask-btn" class="btn btn-primary">Ask</button>
+                </div>
             </div>
             
-            <!-- Question Posts Container -->
             <div id="posts-container">
                 <div class="card"><p>Loading questions...</p></div>
             </div>
         </main>
-
-        <!-- Right Sidebar -->
-        <aside class="sidebar">
-            <div class="trending-topics card">
-                <h4>Trending Topics</h4>
-                <ul>
-                    <li><a href="#">#WorkLifeBalance</a></li>
-                    <li><a href="#">#CareerAdvice</a></li>
-                    <li><a href="#">#Technology</a></li>
-                </ul>
-            </div>
-        </aside>
     </div>
 
-    <button class="floating-btn"><i class="fas fa-plus"></i></button>
-
-    <!-- Main application script -->
     <script type="module" src="app.js"></script>
 </body>
 </html>

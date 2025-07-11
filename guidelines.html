@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Guidelines - AnonAsk</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">AnonAsk</a>
+            <div class="user-menu">
+                <a href="profile.html" id="user-avatar-link" class="user-avatar">?</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="static-page card">
+        <h1>AnonAsk Community Guidelines</h1>
+        <p>Welcome to AnonAsk. We aim to create a safe, curious, and helpful community. To ensure a positive experience for everyone, we require all users to adhere to the following guidelines.</p>
+
+        <h2>1. Be Respectful</h2>
+        <p>Even under the cloak of anonymity, respect is paramount. Healthy debates are encouraged, but personal attacks, harassment, hate speech, or bullying will not be tolerated. Treat others as you would like to be treated.</p>
+        
+        <h2>2. Ask Genuine Questions</h2>
+        <p>This is a place for curiosity. Questions should be asked in good faith. Trolling, spamming, posting loaded questions, or spreading misinformation is strictly prohibited.</p>
+
+        <h2>3. Provide Helpful and Honest Answers</h2>
+        <p>When you answer a question, do so to the best of your ability. Your contribution should be helpful and constructive. Do not knowingly provide false or misleading information.</p>
+
+        <h2>4. Keep it Safe for Everyone</h2>
+        <p>Do not post content that is:</p>
+        <ul>
+            <li>Explicitly graphic, violent, or pornographic.</li>
+            <li>A threat of harm to yourself or others.</li>
+            <li>An invasion of privacy or a sharing of someone's private information without consent (doxxing).</li>
+            <li>Illegal or promotes illegal acts.</li>
+        </ul>
+
+        <h2>5. Use the Reporting Tools</h2>
+        <p>If you see a question, comment, or user that violates these guidelines, please use the "Report" feature. This is the fastest way to bring content to the attention of our moderators. Do not engage with bad actors directly.</p>
+
+        <p>Failure to follow these guidelines may result in content removal, temporary suspension, or a permanent ban from the platform. We reserve the right to update these rules at any time. Thank you for helping us build a great community.</p>
+    </div>
+
+    <script type="module">
+        // Simple script to populate user avatar if logged in
+        import { auth, db, appId, doc, getDoc, onAuthStateChanged } from './firebase-config.js';
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, `artifacts/${appId}/users`, user.uid));
+                if (userDoc.exists()) {
+                    document.getElementById('user-avatar-link').textContent = userDoc.data().username.charAt(0).toUpperCase();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

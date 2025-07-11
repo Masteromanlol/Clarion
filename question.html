@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Profile - AnonAsk</title>
+    <title>Question - AnonAsk</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -19,22 +19,23 @@
 
     <div class="main-container" style="grid-template-columns: 1fr;">
         <main class="main-feed">
-            <div id="profile-details-container" class="profile-header card">
-                <p>Loading profile...</p>
+            <div id="question-container" class="card question-full-content">
+                <p>Loading question...</p>
             </div>
 
-            <div class="profile-content">
-                <div class="profile-tabs">
-                    <button class="tab-btn active">Questions</button>
-                    <button class="tab-btn">Comments</button>
+            <div id="comments" class="comment-section card">
+                <h3>Comments</h3>
+                <div class="comment-form">
+                    <textarea id="comment-input" class="comment-input" placeholder="Add a comment..." rows="3"></textarea>
+                    <button id="comment-submit-btn" class="btn btn-primary" style="align-self: flex-end;">Comment</button>
                 </div>
-                <div id="profile-posts-container" class="posts-container">
-                    <div class="card"><p>Loading content...</p></div>
+                <div id="comments-container">
+                    <p>Loading comments...</p>
                 </div>
             </div>
         </main>
     </div>
 
-    <script type="module" src="profile.js"></script>
+    <script type="module" src="question.js"></script>
 </body>
 </html>
