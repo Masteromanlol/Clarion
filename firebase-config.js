@@ -1,9 +1,10 @@
 // firebase-config.js
 
 // Import the necessary functions from the Firebase SDKs
+// 'increment' has been added to this import line.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, getDocs, onSnapshot, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, getDocs, onSnapshot, serverTimestamp, where, increment, runTransaction, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- Firebase Configuration ---
 // This configuration is automatically provided by the environment.
@@ -15,6 +16,7 @@ const firebaseConfig = {
   messagingSenderId: "147253842789",
   appId: "1:147253842789:web:258871fc1d22f868b0078c"
 };
+
 // --- Initialize Firebase ---
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -55,5 +57,9 @@ export {
   serverTimestamp,
   onAuthStateChanged,
   authenticateUser,
-  where
+  where,
+  // 'increment' has been added to this export list.
+  increment,
+  runTransaction,
+  writeBatch
 };
