@@ -3,25 +3,20 @@
 import {
   auth, db, appId, doc, getDoc, setDoc, collection, addDoc, query, onSnapshot,
   serverTimestamp, onAuthStateChanged, authenticateUser, where, runTransaction, increment,
-  setAuthPersistence // Import the new function
+  setAuthPersistence
 } from './firebase-config.js';
 
 // --- STATE ---
 let currentUser = null;
 
 // --- DOM ELEMENTS ---
-// These will be assigned once the DOM is loaded.
-let postsContainer, askInput, tagsInput, askBtn, floatingBtn, recaptchaContainer;
+let postsContainer, askInput, tagsInput, askBtn;
 
-// --- UI RENDERING FUNCTIONS ---
-
-/**
- * Renders the user's profile information in the sidebar and header.
- * @param {object} userData - The user data from Firestore.
- */
+// --- UI RENDERING ---
 const renderUserProfile = (userData) => {
   if (!userData) return;
   const userInitial = userData.username.charAt(0).toUpperCase();
+  
   const sidebarProfileImg = document.getElementById('sidebar-profile-img');
   if (sidebarProfileImg) sidebarProfileImg.textContent = userInitial;
   
@@ -41,12 +36,8 @@ const renderUserProfile = (userData) => {
   if (userAvatarLink) userAvatarLink.textContent = userInitial;
 };
 
-/**
- * Renders a list of question posts in the main feed.
- * @param {Array<object>} posts - An array of question objects from Firestore.
- */
 const renderPosts = (posts) => {
-  if (!postsContainer) return; // Guard against null element
+  if (!postsContainer) return;
   
   if (posts.length === 0) {
     postsContainer.innerHTML = '<div class="card"><p>No questions have been asked yet. Be the first!</p></div>';
@@ -87,13 +78,7 @@ const renderPosts = (posts) => {
   }).join('');
 };
 
-// --- FIRESTORE SERVICE FUNCTIONS ---
-
-/**
- * Fetches a user's profile from Firestore, creating it if it doesn't exist.
- * @param {string} uid - The user's unique ID from Firebase Auth.
- * @returns {Promise<object>} The user's data.
- */
+// --- FIRESTORE & APP LOGIC ---
 const getUserProfile = async (uid) => {
   const userRef = doc(db, `artifacts/${appId}/users`, uid);
   let userSnap = await getDoc(userRef);
@@ -107,41 +92,21 @@ const getUserProfile = async (uid) => {
       createdAt: serverTimestamp(),
       followersCount: 0,
       followingCount: 0,
-      hasPostedQuestion: false // New field to track first post
     };
     await setDoc(userRef, newUser).catch(e => console.error("Error creating user profile:", e));
-    userSnap = await getDoc(userRef); // Re-fetch the document to get server-generated timestamp
+    userSnap = await getDoc(userRef);
   }
   return { id: userSnap.id, ...userSnap.data() };
 };
 
-/**
- * Submits a new question to Firestore.
- */
 const submitQuestion = async () => {
   const title = askInput.value.trim();
-  if (!title) { 
-    alert("Question cannot be empty."); 
-    return; 
-  }
-  if (!currentUser) { 
-    alert("You must be logged in to ask a question."); 
-    return; 
-  }
-
-  // reCAPTCHA check for first-time posters
-  if (!currentUser.hasPostedQuestion) {
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (recaptchaResponse.length === 0) {
-      alert("Please complete the reCAPTCHA before posting your first question.");
-      return;
-    }
-  }
+  if (!title) { alert("Question cannot be empty."); return; }
+  if (!currentUser) { alert("You must be logged in to ask a question."); return; }
 
   const tags = tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
 
   try {
-    // Add the question to Firestore
     await addDoc(collection(db, `artifacts/${appId}/public/data/questions`), {
       title,
       tags,
@@ -154,31 +119,16 @@ const submitQuestion = async () => {
       voteCount: 0,
       commentCount: 0,
     });
-
-    // If successful, update the user's profile to mark them as a poster
-    const userRef = doc(db, `artifacts/${appId}/users`, currentUser.id);
-    await setDoc(userRef, { hasPostedQuestion: true }, { merge: true });
-
-    askInput.value = ''; // Clear input on success
+    askInput.value = '';
     if (tagsInput) tagsInput.value = '';
-    if (recaptchaContainer) recaptchaContainer.style.display = 'none'; // Hide reCAPTCHA after success
-
   } catch (error) {
     console.error("Firestore Write Error in submitQuestion:", error);
-    alert("Error: Could not submit your question. Please check the console for details. This is often a security rule issue.");
+    alert("Error: Could not submit your question. Please check the console for details.");
   }
 };
 
-/**
- * Handles voting on questions with transaction support.
- * @param {string} questionId - The ID of the question to vote on.
- * @param {string} voteType - Either 'up' or 'down'.
- */
 const handleVote = async (questionId, voteType) => {
-    if (!currentUser) { 
-        alert("You must be logged in to vote."); 
-        return; 
-    }
+    if (!currentUser) { alert("You must be logged in to vote."); return; }
     
     const voteRef = doc(db, `artifacts/${appId}/users/${currentUser.id}/votes`, questionId);
     const questionRef = doc(db, `artifacts/${appId}/public/data/questions`, questionId);
@@ -193,11 +143,11 @@ const handleVote = async (questionId, voteType) => {
             let upvoteIncrementValue = 0;
             let downvoteIncrementValue = 0;
 
-            if (currentVote === voteType) { // Undoing vote
+            if (currentVote === voteType) {
                 if (voteType === 'up') upvoteIncrementValue = -1;
                 else downvoteIncrementValue = -1;
                 transaction.delete(voteRef);
-            } else { // New vote or changing vote
+            } else {
                 if (currentVote === 'up') upvoteIncrementValue = -1;
                 if (currentVote === 'down') downvoteIncrementValue = -1;
                 if (voteType === 'up') upvoteIncrementValue += 1;
@@ -217,9 +167,6 @@ const handleVote = async (questionId, voteType) => {
     }
 };
 
-/**
- * Sets up a real-time listener for all questions.
- */
 const listenForQuestions = () => {
     const q = query(collection(db, `artifacts/${appId}/public/data/questions`));
     onSnapshot(q, (querySnapshot) => {
@@ -227,55 +174,40 @@ const listenForQuestions = () => {
         querySnapshot.forEach((doc) => {
             posts.push({ id: doc.id, ...doc.data() });
         });
-        // Sort by vote count (popularity), then by creation date
         posts.sort((a, b) => {
             const aVotes = a.voteCount || 0;
             const bVotes = b.voteCount || 0;
             if (aVotes !== bVotes) {
-                return bVotes - aVotes; // Higher vote count first
+                return bVotes - aVotes;
             }
-            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0); // Newer first
+            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
         });
         renderPosts(posts);
     }, (error) => {
         console.error("Error listening for questions:", error);
-        postsContainer.innerHTML = '<div class="card"><p>Could not load questions. Please try again later.</p></div>';
     });
 };
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Assign DOM elements now that they exist
   postsContainer = document.getElementById('posts-container');
   askInput = document.getElementById('ask-input');
   tagsInput = document.getElementById('tags-input');
   askBtn = document.getElementById('ask-btn');
-  floatingBtn = document.querySelector('.floating-btn');
-  recaptchaContainer = document.getElementById('recaptcha-container');
 
-  // --- EVENT LISTENERS ---
   if (askBtn) {
     askBtn.addEventListener('click', submitQuestion);
   }
 
   if (askInput) {
     askInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { // Submit on enter, unless shift is held
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         submitQuestion();
       }
     });
   }
 
-  // Optional floating button support
-  if (floatingBtn) {
-    floatingBtn.addEventListener('click', () => {
-      askInput.focus();
-      askInput.scrollIntoView({ behavior: 'smooth' });
-    });
-  }
-
-  // Delegated event listeners for dynamic content
   document.addEventListener('click', (e) => {
     if (e.target.closest('.vote-btn')) {
       const btn = e.target.closest('.vote-btn');
@@ -287,28 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.clipboard.writeText(url).then(() => {
         alert('Link copied to clipboard!');
       }).catch(() => {
-        // Fallback for browsers that don't support clipboard API
         prompt('Copy this link:', url);
       });
     }
   });
 
-  // --- AUTHENTICATION ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       console.log("Authentication successful. User UID:", user.uid);
       currentUser = await getUserProfile(user.uid);
       renderUserProfile(currentUser);
-      listenForQuestions(); // Start listening for questions after user is loaded
-
-      // Show reCAPTCHA if the user has not posted before
-      if (recaptchaContainer && !currentUser.hasPostedQuestion) {
-        recaptchaContainer.style.display = 'block';
-      }
-
+      listenForQuestions();
     } else {
       console.log("No user authenticated. Setting persistence and attempting to sign in...");
-      // Set persistence before signing in
       await setAuthPersistence();
       authenticateUser();
     }
