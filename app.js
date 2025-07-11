@@ -9,11 +9,8 @@ import {
 let currentUser = null;
 
 // --- DOM ELEMENTS ---
-const postsContainer = document.getElementById('posts-container');
-const askInput = document.getElementById('ask-input');
-const tagsInput = document.getElementById('tags-input');
-const askBtn = document.getElementById('ask-btn');
-const floatingBtn = document.querySelector('.floating-btn');
+// These will be assigned once the DOM is loaded.
+let postsContainer, askInput, tagsInput, askBtn, floatingBtn;
 
 // --- UI RENDERING FUNCTIONS ---
 
@@ -22,6 +19,7 @@ const floatingBtn = document.querySelector('.floating-btn');
  * @param {object} userData - The user data from Firestore.
  */
 const renderUserProfile = (userData) => {
+  if (!userData) return;
   const userInitial = userData.username.charAt(0).toUpperCase();
   document.getElementById('sidebar-profile-img').textContent = userInitial;
   document.getElementById('sidebar-profile-name').textContent = userData.username;
@@ -36,6 +34,8 @@ const renderUserProfile = (userData) => {
  * @param {Array<object>} posts - An array of question objects from Firestore.
  */
 const renderPosts = (posts) => {
+  if (!postsContainer) return; // Guard against null element
+  
   if (posts.length === 0) {
     postsContainer.innerHTML = '<div class="card"><p>No questions have been asked yet. Be the first!</p></div>';
     return;
@@ -87,7 +87,7 @@ const getUserProfile = async (uid) => {
   let userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
-    // Create a new profile for the first-time anonymous user
+    console.log("Creating new user profile for UID:", uid);
     const shortId = uid.substring(0, 6);
     const newUser = {
       username: `Anonymous #${shortId}`,
@@ -96,7 +96,7 @@ const getUserProfile = async (uid) => {
       followersCount: 0,
       followingCount: 0,
     };
-    await setDoc(userRef, newUser);
+    await setDoc(userRef, newUser).catch(e => console.error("Error creating user profile:", e));
     userSnap = await getDoc(userRef); // Re-fetch the document to get server-generated timestamp
   }
   return { id: userSnap.id, ...userSnap.data() };
@@ -107,9 +107,13 @@ const getUserProfile = async (uid) => {
  */
 const submitQuestion = async () => {
   const title = askInput.value.trim();
-  if (!title || !currentUser) {
-    console.error("Cannot submit empty question or user not logged in.");
-    return;
+  if (!title) { 
+    alert("Question cannot be empty."); 
+    return; 
+  }
+  if (!currentUser) { 
+    alert("You must be logged in to ask a question."); 
+    return; 
   }
 
   const tags = tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
@@ -130,7 +134,8 @@ const submitQuestion = async () => {
     askInput.value = ''; // Clear input on success
     if (tagsInput) tagsInput.value = '';
   } catch (error) {
-    console.error("Error adding document: ", error);
+    console.error("Firestore Write Error in submitQuestion:", error);
+    alert("Error: Could not submit your question. Please check the console for details. This is often a security rule issue.");
   }
 };
 
@@ -155,32 +160,30 @@ const handleVote = async (questionId, voteType) => {
             if (!questionDoc.exists()) throw "Question does not exist!";
 
             const currentVote = voteDoc.exists() ? voteDoc.data().type : null;
-            let upvoteIncrement = 0;
-            let downvoteIncrement = 0;
+            let upvoteIncrementValue = 0;
+            let downvoteIncrementValue = 0;
 
             if (currentVote === voteType) { // Undoing vote
-                if (voteType === 'up') upvoteIncrement = -1;
-                else downvoteIncrement = -1;
+                if (voteType === 'up') upvoteIncrementValue = -1;
+                else downvoteIncrementValue = -1;
                 transaction.delete(voteRef);
             } else { // New vote or changing vote
-                if (currentVote === 'up') upvoteIncrement = -1;
-                if (currentVote === 'down') downvoteIncrement = -1;
-                if (voteType === 'up') upvoteIncrement += 1;
-                if (voteType === 'down') downvoteIncrement += 1;
+                if (currentVote === 'up') upvoteIncrementValue = -1;
+                if (currentVote === 'down') downvoteIncrementValue = -1;
+                if (voteType === 'up') upvoteIncrementValue += 1;
+                if (voteType === 'down') downvoteIncrementValue += 1;
                 transaction.set(voteRef, { type: voteType });
             }
-
-            const newUpvotes = (questionDoc.data().upvotes || 0) + upvoteIncrement;
-            const newDownvotes = (questionDoc.data().downvotes || 0) + downvoteIncrement;
             
-            transaction.update(questionRef, {
-                upvotes: newUpvotes,
-                downvotes: newDownvotes,
-                voteCount: newUpvotes - newDownvotes
+            transaction.update(questionRef, { 
+                upvotes: increment(upvoteIncrementValue),
+                downvotes: increment(downvoteIncrementValue),
+                voteCount: increment(upvoteIncrementValue - downvoteIncrementValue)
             });
         });
     } catch (e) {
         console.error("Vote transaction failed: ", e);
+        alert("Error: Could not process your vote. Please check the console for details.");
     }
 };
 
@@ -210,53 +213,63 @@ const listenForQuestions = () => {
     });
 };
 
-// --- EVENT LISTENERS ---
-askBtn.addEventListener('click', submitQuestion);
-
-askInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    submitQuestion();
-  }
-});
-
-// Optional floating button support
-if (floatingBtn) {
-  floatingBtn.addEventListener('click', () => {
-    askInput.focus();
-    askInput.scrollIntoView({ behavior: 'smooth' });
-  });
-}
-
-// Delegated event listeners for dynamic content
-document.addEventListener('click', (e) => {
-    if (e.target.closest('.vote-btn')) {
-        const btn = e.target.closest('.vote-btn');
-        handleVote(btn.dataset.id, btn.dataset.vote);
-    }
-    if (e.target.closest('.share-btn')) {
-        const btn = e.target.closest('.share-btn');
-        const url = `${window.location.origin}/question.html?id=${btn.dataset.id}`;
-        navigator.clipboard.writeText(url).then(() => {
-            alert('Link copied to clipboard!');
-        }).catch(() => {
-            // Fallback for browsers that don't support clipboard API
-            prompt('Copy this link:', url);
-        });
-    }
-});
-
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
+  // Assign DOM elements now that they exist
+  postsContainer = document.getElementById('posts-container');
+  askInput = document.getElementById('ask-input');
+  tagsInput = document.getElementById('tags-input');
+  askBtn = document.getElementById('ask-btn');
+  floatingBtn = document.querySelector('.floating-btn');
+
+  // --- EVENT LISTENERS ---
+  if (askBtn) {
+    askBtn.addEventListener('click', submitQuestion);
+  }
+
+  if (askInput) {
+    askInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        submitQuestion();
+      }
+    });
+  }
+
+  // Optional floating button support
+  if (floatingBtn) {
+    floatingBtn.addEventListener('click', () => {
+      askInput.focus();
+      askInput.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Delegated event listeners for dynamic content
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.vote-btn')) {
+      const btn = e.target.closest('.vote-btn');
+      handleVote(btn.dataset.id, btn.dataset.vote);
+    }
+    if (e.target.closest('.share-btn')) {
+      const btn = e.target.closest('.share-btn');
+      const url = `${window.location.origin}/question.html?id=${btn.dataset.id}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+      }).catch(() => {
+        // Fallback for browsers that don't support clipboard API
+        prompt('Copy this link:', url);
+      });
+    }
+  });
+
+  // --- AUTHENTICATION ---
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // User is signed in.
-      console.log("Authenticated user:", user.uid);
+      console.log("Authentication successful. User UID:", user.uid);
       currentUser = await getUserProfile(user.uid);
       renderUserProfile(currentUser);
       listenForQuestions(); // Start listening for questions after user is loaded
     } else {
-      // User is signed out.
-      console.log("No user signed in. Authenticating...");
+      console.log("No user authenticated. Attempting to sign in anonymously...");
       authenticateUser();
     }
   });
