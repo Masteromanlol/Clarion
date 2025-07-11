@@ -6,6 +6,17 @@
     <title>AnonAsk - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <!-- reCAPTCHA Script -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        /* Initially hide the reCAPTCHA container */
+        #recaptcha-container {
+            display: none;
+            margin-top: 1rem;
+            transform: scale(0.9);
+            transform-origin: center left;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -44,6 +55,10 @@
             <div class="ask-question-box card">
                 <textarea id="ask-input" class="ask-input" placeholder="What's on your mind? Ask the world anonymously..." rows="3"></textarea>
                 <input type="text" id="tags-input" class="tags-input" placeholder="Add tags, separated by commas (e.g., tech, career)">
+                
+                <!-- reCAPTCHA Widget -->
+                <div id="recaptcha-container" class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+
                 <div class="ask-footer">
                     <p class="char-counter"></p>
                     <button id="ask-btn" class="btn btn-primary">Ask</button>

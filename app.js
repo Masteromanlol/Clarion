@@ -11,7 +11,7 @@ let currentUser = null;
 
 // --- DOM ELEMENTS ---
 // These will be assigned once the DOM is loaded.
-let postsContainer, askInput, tagsInput, askBtn, floatingBtn;
+let postsContainer, askInput, tagsInput, askBtn, floatingBtn, recaptchaContainer;
 
 // --- UI RENDERING FUNCTIONS ---
 
@@ -107,6 +107,7 @@ const getUserProfile = async (uid) => {
       createdAt: serverTimestamp(),
       followersCount: 0,
       followingCount: 0,
+      hasPostedQuestion: false // New field to track first post
     };
     await setDoc(userRef, newUser).catch(e => console.error("Error creating user profile:", e));
     userSnap = await getDoc(userRef); // Re-fetch the document to get server-generated timestamp
@@ -128,9 +129,19 @@ const submitQuestion = async () => {
     return; 
   }
 
+  // reCAPTCHA check for first-time posters
+  if (!currentUser.hasPostedQuestion) {
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (recaptchaResponse.length === 0) {
+      alert("Please complete the reCAPTCHA before posting your first question.");
+      return;
+    }
+  }
+
   const tags = tagsInput ? tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
 
   try {
+    // Add the question to Firestore
     await addDoc(collection(db, `artifacts/${appId}/public/data/questions`), {
       title,
       tags,
@@ -143,8 +154,15 @@ const submitQuestion = async () => {
       voteCount: 0,
       commentCount: 0,
     });
+
+    // If successful, update the user's profile to mark them as a poster
+    const userRef = doc(db, `artifacts/${appId}/users`, currentUser.id);
+    await setDoc(userRef, { hasPostedQuestion: true }, { merge: true });
+
     askInput.value = ''; // Clear input on success
     if (tagsInput) tagsInput.value = '';
+    if (recaptchaContainer) recaptchaContainer.style.display = 'none'; // Hide reCAPTCHA after success
+
   } catch (error) {
     console.error("Firestore Write Error in submitQuestion:", error);
     alert("Error: Could not submit your question. Please check the console for details. This is often a security rule issue.");
@@ -233,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
   tagsInput = document.getElementById('tags-input');
   askBtn = document.getElementById('ask-btn');
   floatingBtn = document.querySelector('.floating-btn');
+  recaptchaContainer = document.getElementById('recaptcha-container');
 
   // --- EVENT LISTENERS ---
   if (askBtn) {
@@ -281,6 +300,12 @@ document.addEventListener('DOMContentLoaded', () => {
       currentUser = await getUserProfile(user.uid);
       renderUserProfile(currentUser);
       listenForQuestions(); // Start listening for questions after user is loaded
+
+      // Show reCAPTCHA if the user has not posted before
+      if (recaptchaContainer && !currentUser.hasPostedQuestion) {
+        recaptchaContainer.style.display = 'block';
+      }
+
     } else {
       console.log("No user authenticated. Setting persistence and attempting to sign in...");
       // Set persistence before signing in
